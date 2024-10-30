@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: "Microsoft YaHei", "SimHei", sans-serif;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 800px;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .text {
+      font-size: 24px;
+      line-height: 1.8;
+      margin: 20px 0;
+    }
+
+    .char {
+      display: inline-block;
+      position: relative;
+      transition: all 0.3s ease;
+      margin: 0 2px;
+    }
+
+    .random-char {
+      color: #ff4444;
+      animation: fadeInOut 2s infinite;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+
+    .controls {
+      margin: 20px 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .note {
+      font-size: 16px;
+      color: #666;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    .title {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .mode-active {
+      background: #28a745;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">增强版阅读障碍模拟器</h1>
+    
+    <div class="controls">
+      <button onclick="toggleAnimation()" id="startBtn">开始/停止模拟</button>
+      <button onclick="toggleEffect()" id="effectBtn">切换效果</button>
+      <button onclick="toggleRandomChars()" id="randomBtn">开启/关闭随机字符</button>
+    </div>
+
+    <div class="text" id="textContainer">
+      对于有阅读障碍的人来说，阅读汉字可能会遇到很多困难。
+      汉字可能会出现扭曲、移动或模糊的现象。
+      有时候，大脑可能会看到一些实际上并不存在的文字，或者混淆不同的字符。
+      这个模拟器展示了一些可能出现的阅读困难。
+    </div>
+
+    <p class="note">注意：这只是一个简化的模拟。每个人的阅读障碍体验都是独特的。</p>
+  </div>
+
+  <script>
+    let isAnimating = false;
+    let effectMode = 0; // 0: rotation and position, 1: blur and opacity
+    let showRandomChars = false;
+    let animationFrame;
+    let randomCharIntervals = [];
+    
+    // 常用汉字集合
+    const commonChars = "的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经十三之进着等部度家电力里如水化高自二理起小物现实加量都两体制机当使点从业本去把性好应开它合还因由其些然前外天政四日那社义事平形相全表间样与关各重新线内数正心反你明看原又么利比或但质气第向道命此变条只没结解问意建月公无系军很情者最立代想已通并提直题党程展五果料象员革位入常文总次品式活设及管特件长求老头基资边流路级少图山统接知较将组见计别她手角期根论运农指几九区强放决西被干做必战先回则任取据处队南给色光门即保治北造百规热领七海口东导器压志世金增争济阶油思术极交受联什认六共权收证改清己美再采转更单风切打白教速花带安场身车例真务具万每目至达走积示议声报斗完类八离华名确才科张信马节话米整空元况今集温传土许步群广石记需段研界拉林律叫且究观越织装影算低持音众书布复容儿须际商非验连断深难近矿千周委素技备半办青省列习响约支般史感劳便团往酸历市克何除消构府称太准精值号率族维划选标写存候毛亲快效斯院查江型眼王按格养易置派层片始却专状育厂京识适属圆包火住调满县局照参红细引听该铁价严龙飞";
+
+    function setupText() {
+      const container = document.getElementById('textContainer');
+      const text = container.textContent;
+      container.textContent = '';
+      
+      for (let char of text) {
+        if (char.trim() === '') {
+          container.appendChild(document.createTextNode(char));
+          continue;
+        }
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = char;
+        container.appendChild(span);
+      }
+    }
+
+    function getRandomChar() {
+      return commonChars[Math.floor(Math.random() * commonChars.length)];
+    }
+
+    function insertRandomChar() {
+      if (!showRandomChars || !isAnimating) return;
+      
+      const container = document.getElementById('textContainer');
+      const chars = container.getElementsByClassName('char');
+      
+      // 删除现有的随机字符
+      const randomChars = container.getElementsByClassName('random-char');
+      while (randomChars.length > 0) {
+        randomChars[0].remove();
+      }
+
+      // 插入新的随机字符
+      const numRandomChars = Math.floor(Math.random() * 3) + 1; // 1-3个随机字符
+      for (let i = 0; i < numRandomChars; i++) {
+        const randomChar = document.createElement('span');
+        randomChar.className = 'char random-char';
+        randomChar.textContent = getRandomChar();
+        
+        // 随机选择插入位置
+        const insertPosition = Math.floor(Math.random() * chars.length);
+        if (chars[insertPosition]) {
+          chars[insertPosition].parentNode.insertBefore(randomChar, chars[insertPosition]);
+        }
+      }
+    }
+
+    function applyRotationEffect(char) {
+      if (char.classList.contains('random-char')) return;
+      const rotation = (Math.random() - 0.5) * 20;
+      const offsetX = (Math.random() - 0.5) * 5;
+      const offsetY = (Math.random() - 0.5) * 5;
+      
+      char.style.transform = `
+        rotate(${rotation}deg)
+        translate(${offsetX}px, ${offsetY}px)
+      `;
+      char.style.filter = 'none';
+      char.style.opacity = '1';
+    }
+
+    function applyBlurEffect(char) {
+      if (char.classList.contains('random-char')) return;
+      const blurAmount = Math.random() * 2;
+      const opacity = 0.7 + Math.random() * 0.3;
+      
+      char.style.transform = 'none';
+      char.style.filter = `blur(${blurAmount}px)`;
+      char.style.opacity = opacity;
+    }
+
+    function animateCharacters() {
+      if (!isAnimating) return;
+      
+      const chars = document.getElementsByClassName('char');
+      
+      for (let char of chars) {
+        if (Math.random() < 0.1) {
+          if (effectMode === 0) {
+            applyRotationEffect(char);
+          } else {
+            applyBlurEffect(char);
+          }
+        }
+      }
+      
+      animationFrame = requestAnimationFrame(animateCharacters);
+    }
+
+    function toggleAnimation() {
+      isAnimating = !isAnimating;
+      document.getElementById('startBtn').classList.toggle('mode-active');
+      
+      if (isAnimating) {
+        animateCharacters();
+        if (showRandomChars) {
+          // 设置随机字符的周期性更新
+          randomCharIntervals.push(setInterval(insertRandomChar, 2000));
+        }
+      } else {
+        cancelAnimationFrame(animationFrame);
+        const chars = document.getElementsByClassName('char');
+        for (let char of chars) {
+          char.style.transform = 'none';
+          char.style.filter = 'none';
+          char.style.opacity = '1';
+        }
+        // 清除所有随机字符的定时器
+        randomCharIntervals.forEach(interval => clearInterval(interval));
+        randomCharIntervals = [];
+        // 移除所有随机字符
+        const randomChars = document.getElementsByClassName('random-char');
+        while (randomChars.length > 0) {
+          randomChars[0].remove();
+        }
+      }
+    }
+
+    function toggleEffect() {
+      effectMode = effectMode === 0 ? 1 : 0;
+      document.getElementById('effectBtn').classList.toggle('mode-active');
+      if (isAnimating) {
+        const chars = document.getElementsByClassName('char');
+        for (let char of chars) {
+          char.style.transform = 'none';
+          char.style.filter = 'none';
+          char.style.opacity = '1';
+        }
+      }
+    }
+
+    function toggleRandomChars() {
+      showRandomChars = !showRandomChars;
+      document.getElementById('randomBtn').classList.toggle('mode-active');
+      
+      if (showRandomChars && isAnimating) {
+        // 开启随机字符插入
+        randomCharIntervals.push(setInterval(insertRandomChar, 2000));
+      } else {
+        // 清除所有随机字符的定时器
+        randomCharIntervals.forEach(interval => clearInterval(interval));
+        randomCharIntervals = [];
+        // 移除所有随机字符
+        const randomChars = document.getElementsByClassName('random-char');
+        while (randomChars.length > 0) {
+          randomChars[0].remove();
+        }
+      }
+    }
+
+    setupText();
+  </script>
+</body>
+</html>
