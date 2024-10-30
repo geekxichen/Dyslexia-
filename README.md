@@ -1,2 +1,28 @@
-# Dyslexia-
-这是一个中文版本的阅读障碍模拟。This is a Chinese version of the dyslexia simulation with some specific adaptations for Chinese characters. 
+# Dyslexia-阅读障碍者眼中的字体是怎样的？
+这是一个中文版本的阅读障碍模拟器。
+This is a Chinese version of the dyslexia simulation with some specific adaptations for Chinese characters.
+
+您可以：
+点击"开始/停止模拟"来控制整体效果
+使用"切换效果"在旋转和模糊效果之间切换
+点击"开启/关闭随机字符"来控制随机字符的出现
+
+我对模拟器进行了以下增强：
+1."随机字符"功能：
+点击"开启/关闭随机字符"按钮
+随机字符会以红色显示，并有淡入淡出效果
+每2秒随机插入1-3个字符
+随机字符会从常用汉字集中选择
+
+2.改进了界面交互：
+按钮状态更清晰（激活时变为绿色）
+更好的动画过渡效果
+优化了随机字符的显示位置
+
+3.功能组合：
+可以同时开启动态效果（旋转/模糊）和随机字符
+停止模拟时会清除所有效果和随机字符
+
+4.性能优化：
+优化了动画性能
+更好的内存管理（清理定时器和随机字符）
